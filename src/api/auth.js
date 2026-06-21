@@ -1,4 +1,4 @@
-const API_BASE = process.env.REACT_APP_API_BASE;
+const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8000/api';
 
 export async function fetchMe() {
   const response = await fetch(`${API_BASE}/auth/me/`, {

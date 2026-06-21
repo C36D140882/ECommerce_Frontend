@@ -2,7 +2,6 @@ import React from 'react';
 import Header from "./Header";
 import Footer from "./Footer";
 import { Box, Container, Typography, Paper, Grid, Avatar, Divider, Button } from '@mui/material';
-import { Person } from '@mui/icons-material';
 import { getUserData, logout } from '../../api/api';
 import { useNavigate } from 'react-router-dom';
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   Box, Button, Card, Typography, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, IconButton, Dialog,
@@ -6,6 +6,14 @@ import {
 } from '@mui/material';
 import { Edit, Delete, Add } from '@mui/icons-material';
 import { fetchWithAuth } from '../../api/api';
+import { readCache, writeCache } from '../../api/adminCache';
+
+/**
+ * Cache key must match the entry in clearAllAdminCache() in adminCache.ts.
+ * sessionStorage is used → cache survives in-app navigation but is wiped
+ * on a full browser page refresh, which triggers a fresh API call.
+ */
+const CACHE_KEY = 'adminRolesCache';
 
 const EMPTY_ROLE = { id: '', role_name: '' };
 
@@ -15,17 +23,62 @@ export default function RoleManagement(): React.ReactElement {
   const [current, setCurrent] = useState<any>(EMPTY_ROLE);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  const load = async () => {
+  /**
+   * useRef guard: prevents the useEffect from firing twice in React 18
+   * StrictMode (which mounts → unmounts → remounts in dev).
+   * In production this is a no-op; in dev it avoids duplicate API calls.
+   */
+  const hasFetched = useRef(false);
+
+  /**
+   * loadData(forceUpdate = false)
+   *
+   * forceUpdate = false (default, on mount):
+   *   → Check sessionStorage cache first.
+   *   → If cache is valid (within TTL), use it and skip the API call.
+   *   → If cache is empty/expired, fetch from API and write to cache.
+   *
+   * forceUpdate = true (after create / edit / delete):
+   *   → Bypass cache, fetch fresh data, overwrite cache.
+   *
+   * Browser refresh wipes sessionStorage → cache is always empty on reload
+   * → fresh API call happens automatically.
+   */
+  const loadData = async (forceUpdate = false) => {
+    if (!forceUpdate) {
+      const cached = readCache<any[]>(CACHE_KEY);
+      if (cached) {
+        setRoles(cached);
+        setLoading(false);
+        return; // ← skip API call entirely
+      }
+    }
+
+    setLoading(true);
     try {
       const rRes = await fetchWithAuth('/auth/roles/');
-      if (rRes.ok) setRoles(await rRes.json());
+      if (rRes.ok) {
+        const fetched = await rRes.json();
+        setRoles(fetched);
+        writeCache(CACHE_KEY, fetched); // persist to sessionStorage
+      }
     } catch {
-      setError('Failed to load roles.');
+      setError('Failed to load roles. Check your connection.');
+    } finally {
+      setLoading(false);
     }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    if (hasFetched.current) return; // StrictMode guard
+    hasFetched.current = true;
+    loadData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── Dialog helpers ────────────────────────────────────────────────────────
 
   const openCreate = () => { setCurrent(EMPTY_ROLE); setError(''); setOpen(true); };
   const openEdit = (role: any) => {
@@ -33,6 +86,8 @@ export default function RoleManagement(): React.ReactElement {
     setError('');
     setOpen(true);
   };
+
+  // ── CRUD handlers ─────────────────────────────────────────────────────────
 
   const handleSave = async () => {
     if (!current.role_name.trim()) { setError('Role name is required.'); return; }
@@ -45,8 +100,10 @@ export default function RoleManagement(): React.ReactElement {
         method: isEdit ? 'PUT' : 'POST',
         body: JSON.stringify({ role_name: current.role_name }),
       });
-      if (res.ok) { setOpen(false); load(); }
-      else {
+      if (res.ok) {
+        setOpen(false);
+        loadData(true); // force cache refresh after mutation
+      } else {
         const data = await res.json();
         setError(JSON.stringify(data));
       }
@@ -60,8 +117,10 @@ export default function RoleManagement(): React.ReactElement {
   const handleDelete = async (id: string) => {
     if (!window.confirm('Delete this role? Users with this role will lose their access.')) return;
     const res = await fetchWithAuth(`/auth/roles/${id}/`, { method: 'DELETE' });
-    if (res.ok) load();
+    if (res.ok) loadData(true); // force cache refresh after mutation
   };
+
+  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <Box>
@@ -100,7 +159,7 @@ export default function RoleManagement(): React.ReactElement {
               {roles.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} sx={{ textAlign: 'center', py: 4, color: '#94a3b8' }}>
-                    No roles yet. Click "Add Role" to create one.
+                    {loading ? 'Loading…' : 'No roles yet. Click "Add Role" to create one.'}
                   </TableCell>
                 </TableRow>
               ) : roles.map((role, index) => (
