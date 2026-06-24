@@ -1,11 +1,24 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Alert, Box, Button, Card, Container, Stack,
-  TextField, Typography, InputAdornment, IconButton,
+  Alert,
+  Box,
+  Button,
+  Card,
+  CircularProgress,
+  Container,
+  IconButton,
+  InputAdornment,
+  Stack,
+  TextField,
+  Typography,
 } from '@mui/material';
 import {
-  PhoneIphone, LockOutlined, Visibility, VisibilityOff, ArrowForward,
+  ArrowForward,
+  LockOutlined,
+  PhoneIphone,
+  Visibility,
+  VisibilityOff,
 } from '@mui/icons-material';
 import { API_URL } from '../../api/api';
 
@@ -37,7 +50,6 @@ export default function UserLoginPage(): React.ReactElement {
         localStorage.setItem('userSession', JSON.stringify(data.user));
         localStorage.setItem('userData', JSON.stringify(data.user));
 
-        // Admin → admin dashboard | everyone else → home page
         if (data.user.role === 'Admin') {
           navigate('/admin/dashboard', { replace: true });
         } else {
@@ -60,34 +72,42 @@ export default function UserLoginPage(): React.ReactElement {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%)',
+        background: 'linear-gradient(135deg, #e8eef7 0%, #dce6f5 50%, #e4ecf7 100%)',
         p: 2,
       }}
     >
       <Container maxWidth="sm">
         <Card
+          elevation={0}
           sx={{
             borderRadius: 5,
-            boxShadow: '0 24px 48px rgba(0,0,0,0.3)',
+            boxShadow: '0 8px 32px rgba(59,130,246,0.10)',
             overflow: 'hidden',
-            background: 'rgba(255,255,255,0.97)',
-            backdropFilter: 'blur(10px)',
+            background: '#ffffff',
             p: { xs: 4, md: 6 },
           }}
         >
           <Stack spacing={4} alignItems="center" textAlign="center">
 
-            <Box sx={{
-              width: 72, height: 72, borderRadius: '50%',
-              background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 8px 16px rgba(99,102,241,0.3)',
-            }}>
+            {/* Lock icon avatar */}
+            <Box
+              sx={{
+                width: 72,
+                height: 72,
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 8px 16px rgba(37,99,235,0.25)',
+              }}
+            >
               <LockOutlined sx={{ color: 'white', fontSize: 36 }} />
             </Box>
 
+            {/* Heading */}
             <Box>
-              <Typography variant="h4" fontWeight={800} color="#1e1b4b" gutterBottom>
+              <Typography variant="h4" fontWeight={800} color="#1a202c" gutterBottom>
                 Welcome Back
               </Typography>
               <Typography variant="body1" color="text.secondary">
@@ -95,50 +115,68 @@ export default function UserLoginPage(): React.ReactElement {
               </Typography>
             </Box>
 
-            <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
+            {/* Form — native <form> element handled correctly via component prop */}
+            <Box
+              component="form"
+              onSubmit={handleSubmit}
+              noValidate
+              sx={{ width: '100%' }}
+            >
               <Stack spacing={3}>
 
                 <TextField
-                  fullWidth required
+                  fullWidth
+                  required
                   label="Mobile Number"
-                  inputMode="tel"
+                  inputProps={{ inputMode: 'tel' }}
                   value={mobileNumber}
                   onChange={(e) => setMobileNumber(e.target.value)}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <PhoneIphone sx={{ color: 'text.secondary' }} />
-                      </InputAdornment>
-                    ),
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <PhoneIphone sx={{ color: 'text.secondary' }} />
+                        </InputAdornment>
+                      ),
+                    },
                   }}
                   sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
                 />
 
                 <TextField
-                  fullWidth required
+                  fullWidth
+                  required
                   label="Password"
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <LockOutlined sx={{ color: 'text.secondary' }} />
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
-                          {showPassword ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <LockOutlined sx={{ color: 'text.secondary' }} />
+                        </InputAdornment>
+                      ),
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label={showPassword ? 'Hide password' : 'Show password'}
+                            onClick={() => setShowPassword((prev) => !prev)}
+                            edge="end"
+                          >
+                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    },
                   }}
                   sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
                 />
 
                 {message && (
-                  <Alert severity="error" sx={{ borderRadius: 2 }}>{message}</Alert>
+                  <Alert severity="error" sx={{ borderRadius: 2 }}>
+                    {message}
+                  </Alert>
                 )}
 
                 <Button
@@ -146,13 +184,29 @@ export default function UserLoginPage(): React.ReactElement {
                   variant="contained"
                   size="large"
                   disabled={loading}
-                  endIcon={<ArrowForward />}
+                  endIcon={
+                    loading
+                      ? <CircularProgress size={18} color="inherit" />
+                      : <ArrowForward />
+                  }
                   sx={{
-                    py: 1.5, borderRadius: 3,
-                    background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
-                    fontSize: '1.05rem', fontWeight: 600, textTransform: 'none',
-                    boxShadow: '0 8px 16px rgba(99,102,241,0.25)',
-                    '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 12px 20px rgba(99,102,241,0.3)' },
+                    py: 1.5,
+                    borderRadius: 3,
+                    background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                    fontSize: '1.05rem',
+                    fontWeight: 600,
+                    textTransform: 'none',
+                    boxShadow: '0 8px 16px rgba(37,99,235,0.25)',
+                    '&:hover': {
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 12px 20px rgba(37,99,235,0.3)',
+                      background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                    },
+                    '&.Mui-disabled': {
+                      background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                      opacity: 0.6,
+                      color: 'white',
+                    },
                   }}
                 >
                   {loading ? 'Signing in…' : 'Sign In'}
@@ -162,8 +216,16 @@ export default function UserLoginPage(): React.ReactElement {
                   Admin?{' '}
                   <Box
                     component="span"
+                    role="button"
+                    tabIndex={0}
                     onClick={() => navigate('/admin/login')}
-                    sx={{ color: '#6366f1', cursor: 'pointer', fontWeight: 600, '&:hover': { textDecoration: 'underline' } }}
+                    onKeyDown={(e) => e.key === 'Enter' && navigate('/admin/login')}
+                    sx={{
+                      color: '#2563eb',
+                      cursor: 'pointer',
+                      fontWeight: 600,
+                      '&:hover': { textDecoration: 'underline' },
+                    }}
                   >
                     Sign in here
                   </Box>

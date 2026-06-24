@@ -3,11 +3,11 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   Box, Drawer, AppBar, Toolbar, List, Typography, Divider, IconButton,
   ListItem, ListItemButton, ListItemIcon, ListItemText, Avatar, Menu,
-  MenuItem, Badge, Tooltip, useMediaQuery, useTheme,
+  MenuItem, Tooltip, useMediaQuery, useTheme,
 } from '@mui/material';
 import {
   Menu as MenuIcon, Dashboard, People, Security,
-  Logout, Notifications, Storefront,
+  Logout, Storefront,
 } from '@mui/icons-material';
 import { getUserData, logout } from '../../api/api';
 
@@ -47,21 +47,21 @@ export default function AdminLayout(): React.ReactElement {
 
   // ── Sidebar content ────────────────────────────────────────────────────────
   const sidebar = (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: '#0f172a', color: 'white' }}>
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: '#ffffff', color: '#1e293b' }}>
       {/* Logo */}
       <Box sx={{ p: 3, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-        <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(96,165,250,0.15)' }}>
-          <Storefront sx={{ color: '#60a5fa', fontSize: 28 }} />
+        <Box sx={{ p: 1, borderRadius: 2, bgcolor: '#eff6ff' }}>
+          <Storefront sx={{ color: '#2563eb', fontSize: 28 }} />
         </Box>
         <Box>
-          <Typography variant="h6" fontWeight={800} color="white" sx={{ lineHeight: 1.2 }}>
+          <Typography variant="h6" fontWeight={800} color="#1e293b" sx={{ lineHeight: 1.2 }}>
             RK Store
           </Typography>
-          <Typography variant="caption" color="#64748b">Admin Panel</Typography>
+          <Typography variant="caption" color="#94a3b8">Admin Panel</Typography>
         </Box>
       </Box>
 
-      <Divider sx={{ borderColor: 'rgba(255,255,255,0.08)' }} />
+      <Divider sx={{ borderColor: '#e2e8f0' }} />
 
       {/* Nav */}
       <List sx={{ px: 2, pt: 2, flex: 1 }}>
@@ -73,16 +73,17 @@ export default function AdminLayout(): React.ReactElement {
                 onClick={() => { navigate(item.path); if (isMobile) setMobileOpen(false); }}
                 sx={{
                   borderRadius: 2, px: 2, py: 1.2,
-                  bgcolor: active ? 'rgba(59,130,246,0.15)' : 'transparent',
-                  borderLeft: active ? '3px solid #3b82f6' : '3px solid transparent',
-                  color: active ? '#60a5fa' : '#94a3b8',
-                  '&:hover': { bgcolor: 'rgba(59,130,246,0.1)', color: '#bfdbfe' },
+                  bgcolor: active ? '#eff6ff' : 'transparent',
+                  borderLeft: active ? '3px solid #2563eb' : '3px solid transparent',
+                  color: active ? '#2563eb' : '#64748b',
+                  transition: 'all 0.15s',
+                  '&:hover': { bgcolor: '#eff6ff', color: '#2563eb' },
                 }}
               >
                 <ListItemIcon sx={{ color: 'inherit', minWidth: 38 }}>{item.icon}</ListItemIcon>
                 <ListItemText
                   primary={item.text}
-                  primaryTypographyProps={{ fontSize: 14, fontWeight: active ? 600 : 400 }}
+                  primaryTypographyProps={{ fontSize: 14, fontWeight: active ? 600 : 500 }}
                 />
               </ListItemButton>
             </ListItem>
@@ -90,15 +91,15 @@ export default function AdminLayout(): React.ReactElement {
         })}
       </List>
 
-      <Divider sx={{ borderColor: 'rgba(255,255,255,0.08)' }} />
+      <Divider sx={{ borderColor: '#e2e8f0' }} />
 
       {/* Admin info */}
       <Box sx={{ px: 3, py: 2 }}>
-        <Typography variant="caption" color="#64748b" sx={{ display: 'block' }}>Signed in as</Typography>
-        <Typography variant="body2" color="#e2e8f0" fontWeight={600} noWrap>
+        <Typography variant="caption" color="#94a3b8" sx={{ display: 'block' }}>Signed in as</Typography>
+        <Typography variant="body2" color="#1e293b" fontWeight={600} noWrap>
           {user?.name ?? 'Admin'}
         </Typography>
-        <Typography variant="caption" color="#64748b" noWrap>{user?.email}</Typography>
+        <Typography variant="caption" color="#94a3b8" noWrap>{user?.email}</Typography>
       </Box>
 
       {/* Logout */}
@@ -106,7 +107,7 @@ export default function AdminLayout(): React.ReactElement {
         <ListItem disablePadding>
           <ListItemButton
             onClick={handleLogout}
-            sx={{ borderRadius: 2, color: '#f87171', '&:hover': { bgcolor: 'rgba(248,113,113,0.1)' } }}
+            sx={{ borderRadius: 2, color: '#ef4444', '&:hover': { bgcolor: '#fef2f2' } }}
           >
             <ListItemIcon sx={{ color: 'inherit', minWidth: 38 }}><Logout /></ListItemIcon>
             <ListItemText primary="Logout" primaryTypographyProps={{ fontSize: 14 }} />
@@ -143,12 +144,6 @@ export default function AdminLayout(): React.ReactElement {
           <Typography variant="h6" fontWeight={700} color="#1e293b" sx={{ flexGrow: 1 }}>
             {activeTitle}
           </Typography>
-
-          <Tooltip title="Notifications">
-            <IconButton sx={{ color: '#64748b', mr: 1 }}>
-              <Badge badgeContent={3} color="error"><Notifications /></Badge>
-            </IconButton>
-          </Tooltip>
 
           <Tooltip title="Admin Account">
             <IconButton onClick={(e) => setAnchorEl(e.currentTarget)} sx={{ p: 0 }}>
@@ -200,7 +195,11 @@ export default function AdminLayout(): React.ReactElement {
           variant="permanent"
           sx={{
             display: { xs: 'none', sm: 'block' },
-            '& .MuiDrawer-paper': { width: DRAWER_WIDTH, boxSizing: 'border-box', borderRight: 'none' },
+            '& .MuiDrawer-paper': {
+              width: DRAWER_WIDTH,
+              boxSizing: 'border-box',
+              borderRight: '1px solid #e2e8f0',
+            },
           }}
           open
         >
