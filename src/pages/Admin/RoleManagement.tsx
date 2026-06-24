@@ -2,19 +2,14 @@ import React, { useEffect, useState, useRef } from 'react';
 import {
   Box, Button, Card, Typography, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, IconButton, Dialog,
-  DialogTitle, DialogContent, DialogActions, TextField, Stack, Alert,
+  DialogTitle, DialogContent, DialogActions, TextField, Stack,
+  Alert, Chip, Skeleton,
 } from '@mui/material';
 import { Edit, Delete, Add } from '@mui/icons-material';
 import { fetchWithAuth } from '../../api/api';
 import { readCache, writeCache } from '../../api/adminCache';
 
-/**
- * Cache key must match the entry in clearAllAdminCache() in adminCache.ts.
- * sessionStorage is used → cache survives in-app navigation but is wiped
- * on a full browser page refresh, which triggers a fresh API call.
- */
 const CACHE_KEY = 'adminRolesCache';
-
 const EMPTY_ROLE = { id: '', role_name: '' };
 
 export default function RoleManagement(): React.ReactElement {
@@ -24,45 +19,24 @@ export default function RoleManagement(): React.ReactElement {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
-
-  /**
-   * useRef guard: prevents the useEffect from firing twice in React 18
-   * StrictMode (which mounts → unmounts → remounts in dev).
-   * In production this is a no-op; in dev it avoids duplicate API calls.
-   */
   const hasFetched = useRef(false);
 
-  /**
-   * loadData(forceUpdate = false)
-   *
-   * forceUpdate = false (default, on mount):
-   *   → Check sessionStorage cache first.
-   *   → If cache is valid (within TTL), use it and skip the API call.
-   *   → If cache is empty/expired, fetch from API and write to cache.
-   *
-   * forceUpdate = true (after create / edit / delete):
-   *   → Bypass cache, fetch fresh data, overwrite cache.
-   *
-   * Browser refresh wipes sessionStorage → cache is always empty on reload
-   * → fresh API call happens automatically.
-   */
   const loadData = async (forceUpdate = false) => {
     if (!forceUpdate) {
       const cached = readCache<any[]>(CACHE_KEY);
       if (cached) {
         setRoles(cached);
         setLoading(false);
-        return; // ← skip API call entirely
+        return;
       }
     }
-
     setLoading(true);
     try {
       const rRes = await fetchWithAuth('/auth/roles/');
       if (rRes.ok) {
         const fetched = await rRes.json();
         setRoles(fetched);
-        writeCache(CACHE_KEY, fetched); // persist to sessionStorage
+        writeCache(CACHE_KEY, fetched);
       }
     } catch {
       setError('Failed to load roles. Check your connection.');
@@ -72,10 +46,10 @@ export default function RoleManagement(): React.ReactElement {
   };
 
   useEffect(() => {
-    if (hasFetched.current) return; // StrictMode guard
+    if (hasFetched.current) return;
     hasFetched.current = true;
     loadData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ── Dialog helpers ────────────────────────────────────────────────────────
@@ -86,6 +60,7 @@ export default function RoleManagement(): React.ReactElement {
     setError('');
     setOpen(true);
   };
+  const handleClose = () => { setOpen(false); setError(''); };
 
   // ── CRUD handlers ─────────────────────────────────────────────────────────
 
@@ -101,11 +76,11 @@ export default function RoleManagement(): React.ReactElement {
         body: JSON.stringify({ role_name: current.role_name }),
       });
       if (res.ok) {
-        setOpen(false);
-        loadData(true); // force cache refresh after mutation
+        handleClose();
+        loadData(true);
       } else {
         const data = await res.json();
-        setError(JSON.stringify(data));
+        setError(data?.detail ?? JSON.stringify(data));
       }
     } catch {
       setError('Save failed. Please try again.');
@@ -117,107 +92,259 @@ export default function RoleManagement(): React.ReactElement {
   const handleDelete = async (id: string) => {
     if (!window.confirm('Delete this role? Users with this role will lose their access.')) return;
     const res = await fetchWithAuth(`/auth/roles/${id}/`, { method: 'DELETE' });
-    if (res.ok) loadData(true); // force cache refresh after mutation
+    if (res.ok) loadData(true);
   };
+
+  // ── Skeleton rows ─────────────────────────────────────────────────────────
+
+  const SkeletonRows = () => (
+    <>
+      {[1, 2, 3].map(n => (
+        <TableRow key={n}>
+          <TableCell><Skeleton width={20} /></TableCell>
+          <TableCell><Skeleton width={140} /></TableCell>
+          <TableCell><Skeleton width={90} /></TableCell>
+          <TableCell><Skeleton width={64} /></TableCell>
+        </TableRow>
+      ))}
+    </>
+  );
 
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <Box>
-      {/* Header */}
-      <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 4 }}>
+      {/* ── Header ── */}
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="flex-start"
+        sx={{ mb: 4 }}
+      >
         <Box>
-          <Typography variant="h4" fontWeight={800} color="#1e293b">Role Management</Typography>
+          <Typography variant="h5" fontWeight={600} color="text.primary">
+            Role management
+          </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
             Create and manage roles to control user access levels
           </Typography>
         </Box>
+
         <Button
-          variant="contained" startIcon={<Add />}
+          variant="contained"
+          startIcon={<Add />}
           onClick={openCreate}
+          disableElevation
           sx={{
-            borderRadius: 2, textTransform: 'none', fontWeight: 600,
-            background: 'linear-gradient(135deg, #1e40af 0%, #2563eb 100%)',
+            borderRadius: 2,
+            textTransform: 'none',
+            fontWeight: 600,
+            px: 2.5,
+            bgcolor: '#1e40af',
+            '&:hover': { bgcolor: '#1e3a8a' },
           }}
         >
-          Add Role
+          Add role
         </Button>
       </Stack>
 
-      {/* Table */}
-      <Card sx={{ borderRadius: 3, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.08)', border: '1px solid #f1f5f9' }}>
+      {/* ── Summary chip ── */}
+      {!loading && roles.length > 0 && (
+        <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
+          <Chip
+            label={`${roles.length} role${roles.length !== 1 ? 's' : ''}`}
+            size="small"
+            sx={{
+              bgcolor: '#eff6ff',
+              color: '#1e40af',
+              fontWeight: 600,
+              fontSize: 12,
+              border: '1px solid #bfdbfe',
+            }}
+          />
+        </Stack>
+      )}
+
+      {/* ── Table card ── */}
+      <Card
+        elevation={0}
+        sx={{
+          borderRadius: 3,
+          border: '1px solid',
+          borderColor: 'divider',
+          overflow: 'hidden',
+        }}
+      >
         <TableContainer>
           <Table>
             <TableHead>
-              <TableRow sx={{ bgcolor: '#f8fafc' }}>
-                {['#', 'Role Name', 'Created', 'Actions'].map(h => (
-                  <TableCell key={h} sx={{ fontWeight: 700, color: '#475569' }}>{h}</TableCell>
+              <TableRow sx={{ bgcolor: 'grey.50' }}>
+                {['#', 'Role name', 'Created', 'Actions'].map(h => (
+                  <TableCell
+                    key={h}
+                    sx={{
+                      fontWeight: 600,
+                      fontSize: 12,
+                      color: 'text.secondary',
+                      textTransform: 'uppercase',
+                      letterSpacing: 0.5,
+                      py: 1.5,
+                      borderBottom: '1px solid',
+                      borderColor: 'divider',
+                    }}
+                  >
+                    {h}
+                  </TableCell>
                 ))}
               </TableRow>
             </TableHead>
+
             <TableBody>
-              {roles.length === 0 ? (
+              {loading ? (
+                <SkeletonRows />
+              ) : roles.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} sx={{ textAlign: 'center', py: 4, color: '#94a3b8' }}>
-                    {loading ? 'Loading…' : 'No roles yet. Click "Add Role" to create one.'}
+                  <TableCell
+                    colSpan={4}
+                    sx={{
+                      textAlign: 'center',
+                      py: 6,
+                      color: 'text.disabled',
+                      fontSize: 14,
+                    }}
+                  >
+                    No roles yet — click <strong>Add role</strong> to create one.
                   </TableCell>
                 </TableRow>
-              ) : roles.map((role, index) => (
-                <TableRow key={role.id} hover>
-                  <TableCell sx={{ color: '#64748b', fontSize: 13 }}>
-                    {index + 1}
-                  </TableCell>
-                  <TableCell>
-                    <Typography fontWeight={600} color="#1e293b">{role.role_name}</Typography>
-                  </TableCell>
-                  <TableCell sx={{ color: '#64748b', fontSize: 13 }}>
-                    {role.created_at ? new Date(role.created_at).toLocaleDateString() : '—'}
-                  </TableCell>
-                  <TableCell>
-                    <Stack direction="row" spacing={0.5}>
-                      <IconButton size="small" color="primary" onClick={() => openEdit(role)}>
-                        <Edit fontSize="small" />
-                      </IconButton>
-                      <IconButton size="small" color="error" onClick={() => handleDelete(role.id)}>
-                        <Delete fontSize="small" />
-                      </IconButton>
-                    </Stack>
-                  </TableCell>
-                </TableRow>
-              ))}
+              ) : (
+                roles.map((role, index) => (
+                  <TableRow
+                    key={role.id}
+                    hover
+                    sx={{ '&:last-child td': { borderBottom: 0 } }}
+                  >
+                    <TableCell sx={{ color: 'text.disabled', fontSize: 13, width: 48 }}>
+                      {index + 1}
+                    </TableCell>
+
+                    <TableCell>
+                      <Typography fontWeight={600} fontSize={14} color="text.primary">
+                        {role.role_name}
+                      </Typography>
+                    </TableCell>
+
+                    <TableCell sx={{ color: 'text.secondary', fontSize: 13 }}>
+                      {role.created_at
+                        ? new Date(role.created_at).toLocaleDateString(undefined, {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                          })
+                        : '—'}
+                    </TableCell>
+
+                    <TableCell>
+                      <Stack direction="row" spacing={0.5}>
+                        <IconButton
+                          size="small"
+                          onClick={() => openEdit(role)}
+                          aria-label={`Edit ${role.role_name}`}
+                          sx={{
+                            color: '#1e40af',
+                            border: '1px solid',
+                            borderColor: '#bfdbfe',
+                            borderRadius: 1.5,
+                            '&:hover': { bgcolor: '#eff6ff' },
+                          }}
+                        >
+                          <Edit fontSize="small" />
+                        </IconButton>
+
+                        <IconButton
+                          size="small"
+                          onClick={() => handleDelete(role.id)}
+                          aria-label={`Delete ${role.role_name}`}
+                          sx={{
+                            color: 'error.main',
+                            border: '1px solid',
+                            borderColor: '#fecaca',
+                            borderRadius: 1.5,
+                            '&:hover': { bgcolor: '#fef2f2' },
+                          }}
+                        >
+                          <Delete fontSize="small" />
+                        </IconButton>
+                      </Stack>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </TableContainer>
       </Card>
 
-      {/* Dialog */}
-      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="xs" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-        <DialogTitle sx={{ fontWeight: 700 }}>
-          {current.id ? 'Edit Role' : 'Create New Role'}
+      {/* ── Create / Edit dialog ── */}
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{
+          elevation: 0,
+          sx: {
+            borderRadius: 3,
+            border: '1px solid',
+            borderColor: 'divider',
+          },
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 600, fontSize: 16, pb: 1 }}>
+          {current.id ? 'Edit role' : 'Create new role'}
         </DialogTitle>
-        <DialogContent sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-          {error && <Alert severity="error" sx={{ borderRadius: 2 }}>{error}</Alert>}
+
+        <DialogContent sx={{ pt: '12px !important', display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {error && (
+            <Alert severity="error" sx={{ borderRadius: 2, fontSize: 13 }}>
+              {error}
+            </Alert>
+          )}
 
           <TextField
-            fullWidth autoFocus
-            label="Role Name"
+            fullWidth
+            autoFocus
+            label="Role name"
             placeholder="e.g. Manager, Sales Executive"
             value={current.role_name}
-            onChange={(e) => setCurrent({ ...current, role_name: e.target.value })}
-            sx={{ mt: 1, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+            onChange={e => setCurrent({ ...current, role_name: e.target.value })}
+            onKeyDown={e => { if (e.key === 'Enter') handleSave(); }}
+            size="small"
+            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
           />
         </DialogContent>
-        <DialogActions sx={{ p: 2.5, gap: 1 }}>
-          <Button onClick={() => setOpen(false)} variant="outlined" sx={{ borderRadius: 2, textTransform: 'none' }}>
+
+        <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
+          <Button
+            onClick={handleClose}
+            variant="outlined"
+            sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 500 }}
+          >
             Cancel
           </Button>
           <Button
             onClick={handleSave}
             variant="contained"
             disabled={saving}
-            sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
+            disableElevation
+            sx={{
+              borderRadius: 2,
+              textTransform: 'none',
+              fontWeight: 600,
+              bgcolor: '#1e40af',
+              '&:hover': { bgcolor: '#1e3a8a' },
+            }}
           >
-            {saving ? 'Saving…' : current.id ? 'Update Role' : 'Create Role'}
+            {saving ? 'Saving…' : current.id ? 'Update role' : 'Create role'}
           </Button>
         </DialogActions>
       </Dialog>
