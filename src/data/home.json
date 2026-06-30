@@ -1,0 +1,80 @@
+{
+  "bestSelling": [
+    {
+      "id": 1,
+      "name": "Daawat Rozana Basmati Rice",
+      "description": "Premium quality basmati rice with rich aroma.",
+      "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcShW0hcTbJjJuLJiNwbm0nNIOIpBonDG-wPX5RcFJWLiw&s=10"
+    },
+    {
+      "id": 2,
+      "name": "Aashirvaad Select Atta",
+      "description": "100% MP Sharbati atta for soft rotis and healthier meals.",
+      "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS0DhZPVgzb7idIUSICuRKNv2Zeg8a8-4SZXlWRN3p8FA&s=10"
+    },
+    {
+      "id": 3,
+      "name": "Tata Tea Agni",
+      "description": "Strong and refreshing tea for a perfect start of the day.",
+      "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT48y-0wtey9P_elX_pgvE44Q4iNpbLBq5QbMihyESsxw&s=10"
+    },
+    {
+      "id": 4,
+      "name": "Fortune Sunlite Oil",
+      "description": "Light and healthy sunflower oil for everyday cooking.",
+      "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTXHwKfwi6XDQLSvwUpVoUh11rx00b4L9bpO-G92ryd0g&s=10"
+    }
+  ],
+  "groceries": [
+    {
+      "id": 5,
+      "name": "Sunfeast Marie Biscuit",
+      "description": "Crispy and light biscuits perfect for tea time.",
+      "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPB2BTea9BK9dQN-erTANKAQlxjY0pz_uyFUpOdxHenw&s=10"
+    },
+    {
+      "id": 6,
+      "name": "Tata Salt",
+      "description": "Vacuum evaporated iodized salt for healthy living.",
+      "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBvlNVrWpl08ogMFZoPqN_Mu3TXTZdinkDQuOtJL6ahQ&s=10"
+    },
+    {
+      "id": 7,
+      "name": "Maggi 2-Minute Noodles",
+      "description": "Delicious and easy noodles ready in just 2 minutes.",
+      "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT6aagh_YdyD7cG0_nLurjBoUBFmdMl2AnxqnmIt3_Pig&s=10"
+    },
+    {
+      "id": 8,
+      "name": "Bru Instant Coffee",
+      "description": "Rich aroma and strong taste for a perfect coffee break.",
+      "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTVnCrZYBx9bf1RZJuDUquLQyT10zOT3dG59KQZY1bCgg&s=10"
+    }
+  ],
+  "personalCare": [
+    {
+      "id": 9,
+      "name": "Dove Soap",
+      "description": "Gentle care for soft and healthy skin.",
+      "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSpFmchRpfuIYGFOspv-4fXYhZdvw1rfSNr2On0FxOZQQ&s=10"
+    },
+    {
+      "id": 10,
+      "name": "Harpic Power Plus",
+      "description": "10x better cleaning for a hygienic home.",
+      "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTG8IsItQo0Sx-1JYacrqVX1MSdsMX1VvxtZdtCpSYGNg&s=10"
+    },
+    {
+      "id": 11,
+      "name": "Surf Excel Matic",
+      "description": "Top load liquid for superior stain removal.",
+      "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRX7qhiZW6IvyxBFKubCyA-qhTJhHVXvLGARR_Otob1AQ&s=10"
+    },
+    {
+      "id": 12,
+      "name": "Vim Dishwash Gel",
+      "description": "Tough on grease, soft on hands.",
+      "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSDdCuMiHDno_p17tsXFu9cvFrZlxloUBOgHPyoJPa4fQ&s=10"
+    }
+  ]
+}

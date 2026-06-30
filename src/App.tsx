@@ -13,6 +13,7 @@ import RoleManagement from './pages/Admin/RoleManagement';
 import UserLoginPage from './pages/User/UserLoginPage';
 import HomePage from './pages/User/HomePage';
 import ProfilePage from './pages/User/ProfilePage';
+import CategoryPage from './pages/User/CategoryPage';
 
 import { getUserData } from './api/api';
 
@@ -50,6 +51,10 @@ function App() {
         
         {/* Profile page */}
         <Route path="/profile" element={<ProfilePage />} />
+
+        {/* Category pages */}
+        <Route path="/categories" element={<CategoryPage />} />
+        <Route path="/categories/:categoryId" element={<CategoryPage />} />
 
         {/* Admin login (public) */}
         <Route path="/admin" element={<Navigate to="/admin/login" replace />} />

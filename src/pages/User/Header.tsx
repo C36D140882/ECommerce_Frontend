@@ -73,24 +73,32 @@ export default function Header(): React.ReactElement {
           <MenuItem value="Personal Care">Personal Care</MenuItem>
         </Select>
       </Stack>
-      
+
       <Stack direction="row" spacing={2} alignItems="center">
-        <Button 
-          variant="outlined" 
+        <Button
+          startIcon={<Assignment />}
+          onClick={() => navigate('/home')}
+          sx={{
+            color: '#ffffff',
+            borderColor: '#0047FF',
+            fontWeight: 600,
+          }}
+        >
+          Home
+        </Button>
+        <Button
           startIcon={<Assignment />}
           onClick={() => navigate('/orders')}
           sx={{
-            color: '#0047FF',
+            color: '#ffffff',
             borderColor: '#0047FF',
-            textTransform: 'none',
             fontWeight: 600,
-            '&:hover': { borderColor: '#003be0', bgcolor: 'rgba(0, 71, 255, 0.04)' },
           }}
         >
           Orders
         </Button>
-        <Button 
-          variant="contained" 
+        <Button
+          variant="contained"
           startIcon={<Person />}
           onClick={() => navigate('/admin/login')}
           sx={{
@@ -104,7 +112,7 @@ export default function Header(): React.ReactElement {
         </Button>
 
         {/* Profile Logo & Dropdown */}
-        <IconButton 
+        <IconButton
           onClick={handleClick}
           size="small"
           sx={{ ml: 2, border: '2px solid transparent', '&:hover': { borderColor: '#0047FF' } }}
@@ -113,7 +121,7 @@ export default function Header(): React.ReactElement {
             {user ? String(user.username || user.first_name || user.name || user.mobile_number || 'U').charAt(0).toUpperCase() : 'U'}
           </Avatar>
         </IconButton>
-        
+
         <Menu
           anchorEl={anchorEl}
           open={open}
