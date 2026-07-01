@@ -8,12 +8,15 @@ import AdminLoginPage from './pages/Admin/AdminLoginPage';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 import UserManagement from './pages/Admin/UserManagement';
 import RoleManagement from './pages/Admin/RoleManagement';
+import HomeManagement from './pages/Admin/HomeManagement';
+import CompanyManagement from './pages/Admin/CompanyManagement';
 
 // Public pages
 import UserLoginPage from './pages/User/UserLoginPage';
 import HomePage from './pages/User/HomePage';
 import ProfilePage from './pages/User/ProfilePage';
 import CategoryPage from './pages/User/CategoryPage';
+import CompanyPage from './pages/User/CompanyPage';
 
 import { getUserData } from './api/api';
 
@@ -55,6 +58,7 @@ function App() {
         {/* Category pages */}
         <Route path="/categories" element={<CategoryPage />} />
         <Route path="/categories/:categoryId" element={<CategoryPage />} />
+        <Route path="/companies" element={<CompanyPage />} />
 
         {/* Admin login (public) */}
         <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
@@ -65,6 +69,8 @@ function App() {
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="users" element={<UserManagement />} />
           <Route path="roles" element={<RoleManagement />} />
+          <Route path="home-content" element={<HomeManagement />} />
+          <Route path="companies" element={<CompanyManagement />} />
         </Route>
 
         {/* Fallback */}

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { ShoppingBagOutlined } from '@mui/icons-material';
 import {
@@ -10,12 +10,14 @@ import {
   Select,
   Stack,
   Typography,
+  CircularProgress,
 } from '@mui/material';
 import {
   allCategories,
   getCategoryById,
   type Product,
 } from '../../data/categories';
+import { fetchCategories, type Category as ApiCategory } from '../../api/homeApi';
 import Header from './Header';
 import Footer from './Footer';
 
@@ -115,7 +117,7 @@ function ProductCard({ product }: ProductCardProps): React.ReactElement {
         <Stack direction="row" spacing={1.5} sx={{ mb: 1.15 }}>
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography sx={{ fontSize: '0.63rem', fontWeight: 800, color: '#111827', mb: 0.2 }}>
-              Price Amount
+              Rate
             </Typography>
             <Typography sx={{ color: PRIMARY_BLUE, fontWeight: 900, fontSize: { xs: '1.15rem', sm: '1.28rem' }, lineHeight: 1 }}>
               ₹{product.price.toFixed(2)}
@@ -208,19 +210,42 @@ function ProductCard({ product }: ProductCardProps): React.ReactElement {
 
 export default function CategoryPage(): React.ReactElement {
   const { categoryId } = useParams<{ categoryId?: string }>();
-  const selectedCategoryId = categoryId && getCategoryById(categoryId)
-    ? categoryId
-    : 'all';
+  const [apiCategories, setApiCategories] = useState<ApiCategory[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
+  useEffect(() => {
+    fetchCategories()
+      .then(setApiCategories)
+      .catch(console.error)
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  const isValidCategory = categoryId && apiCategories.find(c => c.category_id === categoryId);
+  const selectedCategoryId = isValidCategory ? categoryId : 'all';
+
+  // Fallback to local JSON products while we wait for the Products API to be built
   const products = useMemo(() => (
     selectedCategoryId === 'all'
       ? allCategories.flatMap((category) => category.products)
       : getCategoryById(selectedCategoryId)?.products ?? []
   ), [selectedCategoryId]);
 
+  const apiCat = apiCategories.find(c => c.category_id === selectedCategoryId);
   const pageTitle = selectedCategoryId === 'all'
     ? 'All Products'
-    : getCategoryById(selectedCategoryId)?.categoryName ?? 'All Products';
+    : apiCat?.category_name ?? 'All Products';
+
+  if (isLoading) {
+    return (
+      <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', bgcolor: '#fff' }}>
+        <Header />
+        <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <CircularProgress />
+        </Box>
+        <Footer />
+      </Box>
+    );
+  }
 
   return (
     <Box

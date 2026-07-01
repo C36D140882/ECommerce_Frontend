@@ -7,7 +7,7 @@ import {
 } from '@mui/material';
 import {
   Menu as MenuIcon, Dashboard, People, Security,
-  Logout, Storefront,
+  Logout, Storefront, HomeWorkOutlined, BusinessOutlined,
 } from '@mui/icons-material';
 import { getUserData, logout } from '../../api/api';
 
@@ -15,6 +15,8 @@ const DRAWER_WIDTH = 260;
 
 const NAV_ITEMS = [
   { text: 'Dashboard', icon: <Dashboard />, path: '/admin/dashboard' },
+  { text: 'Home Content', icon: <HomeWorkOutlined />, path: '/admin/home-content' },
+  { text: 'Companies', icon: <BusinessOutlined />, path: '/admin/companies' },
   { text: 'Users', icon: <People />, path: '/admin/users' },
   { text: 'Roles', icon: <Security />, path: '/admin/roles' },
 ];
@@ -95,7 +97,6 @@ export default function AdminLayout(): React.ReactElement {
 
       {/* Admin info */}
       <Box sx={{ px: 3, py: 2 }}>
-        <Typography variant="caption" color="#94a3b8" sx={{ display: 'block' }}>Signed in as</Typography>
         <Typography variant="body2" color="#1e293b" fontWeight={600} noWrap>
           {user?.name ?? 'Admin'}
         </Typography>
